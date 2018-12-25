@@ -1,7 +1,10 @@
 package dao
 
 import (
+	"crypto/tls"
+	"fmt"
 	"log"
+	"net"
 	"strings"
 	"time"
 
@@ -22,10 +25,22 @@ const (
 )
 
 func (m *TrendingDao) Connect() {
-	session, err := mgo.Dial(m.Server)
+	dialInfo, err0 := mgo.ParseURL(m.Server)
+	if err0 != nil {
+		log.Fatal(err0)
+	}
+	if m.Server != "localhost" {
+		tlsConfig := &tls.Config{}
+		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
+			conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
+			return conn, err
+		}
+	}
+	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Connected to DB!")
 	db = session.DB(m.Database)
 }
 
