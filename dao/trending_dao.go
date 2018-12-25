@@ -3,8 +3,8 @@ package dao
 import (
 	"log"
 
+	. "github.com/lttkgp/R2-D2/models"
 	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type TrendingDao struct {
@@ -15,7 +15,7 @@ type TrendingDao struct {
 var db *mgo.Database
 
 const (
-	COLLECTION = "songs"
+	COLLECTION = "posts"
 )
 
 func (m *TrendingDao) Connect() {
@@ -26,8 +26,9 @@ func (m *TrendingDao) Connect() {
 	db = session.DB(m.Database)
 }
 
-func (m *TrendingDao) FindById(id string) (Song, error) {
-	var song Song
-	err := db.C(COLLECTION).FindId(bson.ObjectIdHex(id)).One(&song)
-	return song, err
+func (m *TrendingDao) GetTrendingForPeriod(id string) ([]Post, error) {
+	var trendingPosts []Post
+	trendingPostsQuery := db.C(COLLECTION).Find(nil).Sort("-created_time").Limit(10).Iter()
+	err := trendingPostsQuery.All(&trendingPosts)
+	return trendingPosts, err
 }
