@@ -55,14 +55,14 @@ func (m *TrendingDao) GetTrendingForPeriod(period string) ([]Post, error) {
 		timeUntil = timeNow.AddDate(0, -1, 0)
 	}
 	timeUntilString := strings.TrimSuffix(timeUntil.In(loc).Format(time.RFC3339), "Z")
-	latestPostsQuery := db.C(COLLECTION).Find(bson.M{"created_time": bson.M{"$gt": timeUntilString}}).Limit(50).Sort("-reactions.summary.total_count").Iter()
+	latestPostsQuery := db.C(COLLECTION).Find(bson.M{"created_time": bson.M{"$gt": timeUntilString}, "type": "video"}).Limit(50).Sort("-reactions.summary.total_count").Iter()
 	err := latestPostsQuery.All(&latestPosts)
 	return latestPosts, err
 }
 
 func (m *TrendingDao) GetLatestByCount(count int) ([]Post, error) {
 	var trendingPosts []Post
-	trendingPostsQuery := db.C(COLLECTION).Find(nil).Sort("-created_time").Limit(count).Iter()
+	trendingPostsQuery := db.C(COLLECTION).Find(bson.M{"type": "video"}).Sort("-created_time").Limit(count).Iter()
 	err := trendingPostsQuery.All(&trendingPosts)
 	return trendingPosts, err
 }
