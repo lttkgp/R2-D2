@@ -29,7 +29,8 @@ func (m *TrendingDao) Connect() {
 	if err0 != nil {
 		log.Fatal(err0)
 	}
-	if m.Server != "localhost" {
+	fmt.Println(m.Server)
+	if m.Server != "mongodb://localhost" {
 		tlsConfig := &tls.Config{}
 		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
 			conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
@@ -51,6 +52,8 @@ func (m *TrendingDao) GetTrendingForPeriod(period string) ([]Post, error) {
 	timeUntil := timeNow
 	if period == "day" {
 		timeUntil = timeNow.AddDate(0, 0, -1)
+	} else if period == "week" {
+		timeUntil = timeNow.AddDate(0, 0, -7)
 	} else if period == "month" {
 		timeUntil = timeNow.AddDate(0, -1, 0)
 	}
