@@ -16,6 +16,7 @@ var dao = TrendingDao{}
 
 // TrendingSongsEndPoint gets the Trending songs
 func TrendingSongsEndPoint(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	params := mux.Vars(r)
 	posts, err := dao.GetTrendingForPeriod(params["period"])
 	if err != nil {
@@ -27,6 +28,7 @@ func TrendingSongsEndPoint(w http.ResponseWriter, r *http.Request) {
 
 // LatestSongsEndPoint gets the Latest songs
 func LatestSongsEndPoint(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	params := mux.Vars(r)
 	count, err := strconv.Atoi(params["count"])
 	if err != nil {
@@ -50,6 +52,10 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 // Parse the configuration file 'config.toml', and establish a connection to DB
