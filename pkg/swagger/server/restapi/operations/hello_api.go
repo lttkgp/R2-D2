@@ -48,7 +48,7 @@ func NewHelloAPI(spec *loads.Document) *HelloAPI {
 	}
 }
 
-/*HelloAPI HTTP server in Go with Swagger endpoints definition */
+/*HelloAPI Facebook connector for C-3PO that manages & exposes Facebook group data */
 type HelloAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context

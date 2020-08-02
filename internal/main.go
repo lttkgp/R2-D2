@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	bootstrapDb()
+
 	// Initialize Swagger
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -27,7 +29,6 @@ func main() {
 	}()
 
 	server.Port = 8080
-
 	api.CheckHealthHandler = operations.CheckHealthHandlerFunc(Health)
 
 	// Start server which listening

@@ -67,7 +67,7 @@
 <script>
 window.onload = function() {
 
-  var spec = {"consumes": ["application/json"], "info": {"description": "HTTP server in Go with Swagger endpoints definition", "title": "R2-D2", "version": "0.1.0"}, "produces": ["application/json"], "schemes": ["http"], "swagger": "2.0", "paths": {"/healthz": {"get": {"operationId": "checkHealth", "produces": ["text/plain"], "responses": {"200": {"description": "OK message", "schema": {"type": "string", "enum": ["OK"]}}}}}}};
+  var spec = {"swagger": "2.0", "info": {"description": "Facebook connector for C-3PO that manages & exposes Facebook group data", "title": "R2-D2", "version": "0.1.0"}, "consumes": ["application/json"], "produces": ["application/json"], "schemes": ["http"], "paths": {"/healthz": {"get": {"operationId": "checkHealth", "produces": ["text/plain"], "responses": {"200": {"description": "OK message", "schema": {"type": "string", "enum": ["OK"]}}}}}}};
 
   // Build a system
   const ui = SwaggerUIBundle({

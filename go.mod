@@ -23,7 +23,7 @@ require (
 	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/gostaticanalysis/analysisutil v0.1.0 // indirect
 	github.com/hhatto/gorst v0.0.0-20181029133204-ca9f730cac5b // indirect
-	github.com/huandu/facebook/v2 v2.5.2 // indirect
+	github.com/huandu/facebook/v2 v2.5.2
 	github.com/jdkato/prose v1.2.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jirfag/go-printf-func-name v0.0.0-20200119135958-7558a9eaa5af // indirect
@@ -44,6 +44,7 @@ require (
 	github.com/tdakkota/asciicheck v0.0.0-20200416200610-e657995f937b // indirect
 	github.com/tetafro/godot v0.4.8 // indirect
 	github.com/timakin/bodyclose v0.0.0-20200424151742-cb6215831a94 // indirect
+	go.mongodb.org/mongo-driver v1.3.4
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381

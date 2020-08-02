@@ -86,7 +86,7 @@ endif
 
 ## Build all binaries
 build:
-	$(GO) build -o bin/r2-d2 internal/main.go
+	GO111MODULE=on $(GO) build -o bin/r2-d2 internal/*.go
 
 ## Compress all binaries
 pack:

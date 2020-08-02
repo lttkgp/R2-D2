@@ -2,7 +2,7 @@
 
 // Package restapi R2-D2
 //
-//  HTTP server in Go with Swagger endpoints definition
+//  Facebook connector for C-3PO that manages & exposes Facebook group data
 //  Schemes:
 //    http
 //  Host: localhost
