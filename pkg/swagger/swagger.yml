@@ -1,0 +1,25 @@
+consumes:
+  - application/json
+info:
+  description: HTTP server in Go with Swagger endpoints definition
+  title: R2-D2
+  version: 0.1.0
+produces:
+  - application/json
+schemes:
+  - http
+swagger: "2.0"
+
+paths:
+  /healthz:
+    get:
+      operationId: checkHealth
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: OK message
+          schema:
+            type: string
+            enum:
+              - OK
