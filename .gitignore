@@ -17,3 +17,6 @@
 
 # IntelliJ
 .idea
+
+# Environment variables
+.env

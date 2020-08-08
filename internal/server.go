@@ -5,12 +5,13 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/lttkgp/R2-D2/internal/facebook"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
 )
 
 func main() {
-	bootstrapDb()
+	facebook.BootstrapDb()
 
 	// Initialize Swagger
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")

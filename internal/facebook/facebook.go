@@ -1,10 +1,13 @@
-package main
+package facebook
 
 import (
 	"fmt"
 	"log"
+	"os"
 
 	fb "github.com/huandu/facebook/v2"
+	"github.com/lttkgp/R2-D2/internal/mongo"
+	"github.com/lttkgp/R2-D2/internal/utils"
 )
 
 const fbGroupID = "1488511748129645"
@@ -17,15 +20,16 @@ shares,source,status_type,type,updated_time,reactions.summary(true){id,name,type
 comments.summary(true){id,attachment,comment_count,created_time,from,like_count,message,message_tags,parent}`}
 
 func getFbAccessToken(fbApp *fb.App) string {
-	longAccessToken := getEnv("FB_LONG_ACCESS_TOKEN", "")
+	longAccessToken := utils.GetEnv("FB_LONG_ACCESS_TOKEN", "")
 	if longAccessToken == "" {
-		shortAccessToken := getEnv("FB_SHORT_ACCESS_TOKEN", "")
+		shortAccessToken := utils.GetEnv("FB_SHORT_ACCESS_TOKEN", "")
 		if shortAccessToken == "" {
 			return shortAccessToken
 		}
 		var err error
 		longAccessToken, _, err = fbApp.ExchangeToken(shortAccessToken)
-		if err != nil {
+		setEnvErr := os.Setenv("FB_LONG_ACCESS_TOKEN", longAccessToken)
+		if err != nil || setEnvErr != nil {
 			return ""
 		}
 	}
@@ -33,7 +37,7 @@ func getFbAccessToken(fbApp *fb.App) string {
 }
 
 func getFacebookSession() *fb.Session {
-	var fbApp = fb.New(getEnv("FB_APP_ID", ""), getEnv("FB_APP_SECRET", ""))
+	var fbApp = fb.New(utils.GetEnv("FB_APP_ID", ""), utils.GetEnv("FB_APP_SECRET", ""))
 	fbApp.RedirectUri = "https://beta.lttkgp.com"
 	fbSession := fbApp.Session(getFbAccessToken(fbApp))
 	fbSession.RFC3339Timestamps = true
@@ -43,9 +47,10 @@ func getFacebookSession() *fb.Session {
 
 func insertPosts(paging *fb.PagingResult) {
 	// Initialize Mongo client
-	mongoClient, ctx, err := getMongoClient()
+	mongoClient, ctx, cancel, err := mongo.GetMongoClient()
 	defer func() {
-		if err = mongoClient.Disconnect(*ctx); err != nil {
+		cancel()
+		if err = mongoClient.Disconnect(ctx); err != nil {
 			panic(err)
 		}
 	}()
@@ -55,7 +60,7 @@ func insertPosts(paging *fb.PagingResult) {
 	for {
 		// Iterate through posts in page
 		for _, post := range paging.Data() {
-			mongoRes, err := collection.InsertOne(*ctx, post)
+			mongoRes, err := collection.InsertOne(ctx, post)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -73,7 +78,8 @@ func insertPosts(paging *fb.PagingResult) {
 	}
 }
 
-func bootstrapDb() {
+// BootstrapDb Bootstrap MongoDB with Facebook posts
+func BootstrapDb() {
 	fbSession := getFacebookSession()
 	feedResp, err := fbSession.Get(fmt.Sprintf("%s/feed", fbGroupID), fbFeedParams)
 	if err != nil {
