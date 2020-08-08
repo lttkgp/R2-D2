@@ -1,13 +1,17 @@
 package facebook
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
 	fb "github.com/huandu/facebook/v2"
-	"github.com/lttkgp/R2-D2/internal/mongo"
+	"github.com/lttkgp/R2-D2/internal/db"
 	"github.com/lttkgp/R2-D2/internal/utils"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const fbGroupID = "1488511748129645"
@@ -18,6 +22,13 @@ var fbFeedParams = fb.Params{"fields": `
 id,created_time,from,link,message,message_tags,name,object_id,permalink_url,properties,
 shares,source,status_type,type,updated_time,reactions.summary(true){id,name,type},
 comments.summary(true){id,attachment,comment_count,created_time,from,like_count,message,message_tags,parent}`}
+
+// MongoPost describes how data should be inserted into Mongo
+type MongoPost struct {
+	IsParsed     bool      `bson:"is_parsed"`
+	FacebookID   string    `bson:"facebook_id"`
+	FacebookPost fb.Result `bson:"facebook_post"`
+}
 
 func getFbAccessToken(fbApp *fb.App) string {
 	longAccessToken := utils.GetEnv("FB_LONG_ACCESS_TOKEN", "")
@@ -45,9 +56,20 @@ func getFacebookSession() *fb.Session {
 	return fbSession
 }
 
+func updateOrInsert(ctx context.Context, collection *mongo.Collection, mongoPost MongoPost) {
+	shouldUpsert := true
+	replaceOptions := options.ReplaceOptions{Upsert: &shouldUpsert}
+	replaceFilter := bson.M{"facebook_id": mongoPost.FacebookID}
+	mongoRes, err := collection.ReplaceOne(ctx, replaceFilter, mongoPost, &replaceOptions)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(mongoRes.UpsertedID)
+}
+
 func insertPosts(paging *fb.PagingResult) {
 	// Initialize Mongo client
-	mongoClient, ctx, cancel, err := mongo.GetMongoClient()
+	mongoClient, ctx, cancel, err := db.GetMongoClient()
 	defer func() {
 		cancel()
 		if err = mongoClient.Disconnect(ctx); err != nil {
@@ -60,11 +82,17 @@ func insertPosts(paging *fb.PagingResult) {
 	for {
 		// Iterate through posts in page
 		for _, post := range paging.Data() {
-			mongoRes, err := collection.InsertOne(ctx, post)
+			var facebookID string
+			err := post.DecodeField("id", &facebookID)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			log.Println(mongoRes.InsertedID)
+			mongoPost := MongoPost{
+				IsParsed:     false,
+				FacebookID:   facebookID,
+				FacebookPost: post,
+			}
+			updateOrInsert(ctx, collection, mongoPost)
 		}
 
 		// Break on last page
