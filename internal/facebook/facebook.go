@@ -25,6 +25,7 @@ const fbGroupID = "1488511748129645"
 const mongoDbName = "lttkgp"
 const feedCollectionName = "feed"
 
+var whoamiHeaderVal = utils.GetEnv("WHOAMI", "")
 var fbFeedParams = fb.Params{"fields": `
 id,created_time,from,link,message,message_tags,name,object_id,permalink_url,properties,
 shares,source,status_type,type,updated_time,reactions.summary(true){id,name,type},
@@ -155,6 +156,10 @@ func BootstrapDb() {
 
 // DispatchFreshPosts picks up the posts Mongo which have is_parsed=false and sends them to C3PO
 func DispatchFreshPosts() {
+	if whoamiHeaderVal == "" {
+		log.Fatalln("C3PO header env variable `WHOAMI` not present")
+	}
+
 	// Initialize Mongo client
 	mongoClient, ctx, cancel, err := db.GetMongoClient()
 	defer func() {
@@ -179,7 +184,7 @@ func DispatchFreshPosts() {
 
 	// Loop through all posts not yet parsed
 	for cur.Next(ctx) {
-		// Prepare request body
+		// Prepare request
 		var result MongoPost
 		err := cur.Decode(&result)
 		if err != nil {
@@ -190,11 +195,19 @@ func DispatchFreshPosts() {
 			log.Fatalln(err)
 		}
 
-		// Make POST request to C3PO
-		resp, err := http.Post(
+		req, err := http.NewRequest(
+			"POST",
 			fmt.Sprintf("%s/v1/data/post", utils.GetEnv("C3PO_URI", "")),
-			"application/json",
 			bytes.NewBuffer(requestBody))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		req.Header.Set("whoami", whoamiHeaderVal)
+		req.Header.Set("Content-Type", "application/json")
+
+		// Make POST request to C3PO
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			log.Fatalln(err)
 		}
