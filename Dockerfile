@@ -1,7 +1,11 @@
 FROM golang:alpine AS builder
 
 # Add build dependencies
-RUN apk update && apk add make upx ncurses
+# update-ca-certificates will show a warning, which is safe to ignore.
+# https://github.com/gliderlabs/docker-alpine/issues/52
+RUN apk update && \
+    apk add --no-cache make upx ncurses ca-certificates && \
+    update-ca-certificates
 
 # Set necessary environmet variables needed for our image
 ENV GO111MODULE=on \
@@ -29,6 +33,8 @@ RUN cp /build/bin/r2-d2 .
 # Build a small image
 FROM scratch
 
+# Import from Builder
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist/r2-d2 .
 
 # Export necessary port
