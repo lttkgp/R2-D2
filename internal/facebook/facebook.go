@@ -16,6 +16,7 @@ import (
 	"github.com/lttkgp/R2-D2/internal/db"
 	"github.com/lttkgp/R2-D2/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -34,6 +35,11 @@ type MongoPost struct {
 	IsParsed     bool      `bson:"is_parsed" json:"is_parsed"`
 	FacebookID   string    `bson:"facebook_id" json:"facebook_id"`
 	FacebookPost fb.Result `bson:"facebook_post" json:"facebook_post"`
+}
+
+// C3poResponse describes the response from C-3PO POST request
+type C3poResponse struct {
+	Success bool `json:"success"`
 }
 
 func retryNotifyFunc(err error, duration time.Duration) {
@@ -93,7 +99,8 @@ func insertPosts(paging *fb.PagingResult) {
 		// Iterate through posts in page
 		for _, post := range paging.Data() {
 			var facebookID string
-			err := post.DecodeField("id", &facebookID)
+			var err error
+			err = post.DecodeField("id", &facebookID)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -158,6 +165,7 @@ func DispatchFreshPosts() {
 	}()
 	feedCollection := mongoClient.Database(mongoDbName).Collection(feedCollectionName)
 
+	// Fetch all posts which are not yet parsed
 	cur, err := feedCollection.Find(ctx, bson.M{"is_parsed": false})
 	if err != nil {
 		log.Fatalln(err)
@@ -168,19 +176,21 @@ func DispatchFreshPosts() {
 			log.Println(err)
 		}
 	}()
+
+	// Loop through all posts not yet parsed
 	for cur.Next(ctx) {
+		// Prepare request body
 		var result MongoPost
 		err := cur.Decode(&result)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		// POST request to C-3PO
 		requestBody, err := json.Marshal(result)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
+		// Make POST request to C3PO
 		resp, err := http.Post(
 			fmt.Sprintf("%s/v1/data/post", utils.GetEnv("C3PO_URI", "")),
 			"application/json",
@@ -189,11 +199,28 @@ func DispatchFreshPosts() {
 			log.Fatalln(err)
 		}
 
+		// Parse response body as bytes
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		log.Println(string(body))
+
+		var c3poResponse C3poResponse
+		err = json.Unmarshal(body, &c3poResponse)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		if c3poResponse.Success {
+			searchFilter := bson.M{"facebook_id": result.FacebookID}
+			updateOp := bson.D{primitive.E{Key: "$set", Value: bson.D{primitive.E{Key: "is_parsed", Value: true}}}}
+			_, err := feedCollection.UpdateOne(ctx, searchFilter, updateOp)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			log.Println(fmt.Sprintf("Successfully parsed postId=%s", result.FacebookID))
+		} else {
+			log.Println(fmt.Sprintf("Failed to parse postId=%s", result.FacebookID))
+		}
 
 		err = resp.Body.Close()
 		if err != nil {
