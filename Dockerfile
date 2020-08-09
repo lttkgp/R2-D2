@@ -1,7 +1,7 @@
 FROM golang:alpine AS builder
 
 # Add build dependencies
-RUN apk update && apk add make ncurses
+RUN apk update && apk add make upx ncurses
 
 # Set necessary environmet variables needed for our image
 ENV GO111MODULE=on \
@@ -16,8 +16,9 @@ WORKDIR /build
 # We don't need to fetch dependencies since vendor directory is checked in
 COPY . .
 
-# Build the application
+# Build and compress the application
 RUN make build
+RUN make pack
 
 # Move to /dist directory as the place for resulting binary folder
 WORKDIR /dist
