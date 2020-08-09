@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/Djarvur/go-err113 v0.1.0 // indirect
+	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/cloudfoundry-incubator/candiedyaml v0.0.0-20170901234223-a41693b7b7af // indirect
 	github.com/dgryski/go-minhash v0.0.0-20190315135803-ad340ca03076 // indirect
 	github.com/ekzhu/minhash-lsh v0.0.0-20190924033628-faac2c6342f8 // indirect

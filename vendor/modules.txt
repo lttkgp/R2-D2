@@ -6,6 +6,9 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 github.com/asaskevich/govalidator
+# github.com/cenkalti/backoff/v4 v4.0.2
+## explicit
+github.com/cenkalti/backoff/v4
 # github.com/cloudfoundry-incubator/candiedyaml v0.0.0-20170901234223-a41693b7b7af
 ## explicit
 # github.com/dgryski/go-minhash v0.0.0-20190315135803-ad340ca03076

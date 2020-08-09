@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	fb "github.com/huandu/facebook/v2"
 	"github.com/lttkgp/R2-D2/internal/db"
 	"github.com/lttkgp/R2-D2/internal/utils"
@@ -23,11 +25,15 @@ id,created_time,from,link,message,message_tags,name,object_id,permalink_url,prop
 shares,source,status_type,type,updated_time,reactions.summary(true){id,name,type},
 comments.summary(true){id,attachment,comment_count,created_time,from,like_count,message,message_tags,parent}`}
 
-// MongoPost describes how data should be inserted into Mongo
+// MongoPost describes the data structure to be inserted into Mongo
 type MongoPost struct {
 	IsParsed     bool      `bson:"is_parsed"`
 	FacebookID   string    `bson:"facebook_id"`
 	FacebookPost fb.Result `bson:"facebook_post"`
+}
+
+func retryNotifyFunc(err error, duration time.Duration) {
+	log.Println(fmt.Sprintf("Queued for retry after %s, error=%s", duration, err))
 }
 
 func getFbAccessToken(fbApp *fb.App) string {
@@ -95,8 +101,16 @@ func insertPosts(paging *fb.PagingResult) {
 			updateOrInsertPost(ctx, feedCollection, mongoPost)
 		}
 
+		exponentialBackoff := backoff.NewExponentialBackOff()
+		exponentialBackoff.MaxInterval = 6 * time.Hour
+
 		// Break on last page
-		noMore, err := paging.Next()
+		var noMore bool
+		err := backoff.RetryNotify(func() error {
+			var fbError error
+			noMore, fbError = paging.Next()
+			return fbError
+		}, exponentialBackoff, retryNotifyFunc)
 		if err != nil {
 			panic(err)
 		}
@@ -106,11 +120,21 @@ func insertPosts(paging *fb.PagingResult) {
 	}
 }
 
-// BootstrapDb Bootstrap MongoDB with Facebook posts
+// BootstrapDb bootstraps MongoDB with Facebook posts
 func BootstrapDb() {
 	fbSession := getFacebookSession()
 	fbSession.Version = "v7.0"
-	feedResp, err := fbSession.Get(fmt.Sprintf("%s/feed", fbGroupID), fbFeedParams)
+
+	exponentialBackoff := backoff.NewExponentialBackOff()
+	exponentialBackoff.MaxInterval = 6 * time.Hour
+
+	// Fetch the first page of response
+	var feedResp fb.Result
+	err := backoff.RetryNotify(func() error {
+		var fbError error
+		feedResp, fbError = fbSession.Get(fmt.Sprintf("%s/feed", fbGroupID), fbFeedParams)
+		return fbError
+	}, exponentialBackoff, retryNotifyFunc)
 	if err != nil {
 		log.Fatalln(err)
 	}
