@@ -1,9 +1,13 @@
 package facebook
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -27,9 +31,9 @@ comments.summary(true){id,attachment,comment_count,created_time,from,like_count,
 
 // MongoPost describes the data structure to be inserted into Mongo
 type MongoPost struct {
-	IsParsed     bool      `bson:"is_parsed"`
-	FacebookID   string    `bson:"facebook_id"`
-	FacebookPost fb.Result `bson:"facebook_post"`
+	IsParsed     bool      `bson:"is_parsed" json:"is_parsed"`
+	FacebookID   string    `bson:"facebook_id" json:"facebook_id"`
+	FacebookPost fb.Result `bson:"facebook_post" json:"facebook_post"`
 }
 
 func retryNotifyFunc(err error, duration time.Duration) {
@@ -140,4 +144,63 @@ func BootstrapDb() {
 	}
 	paging, _ := feedResp.Paging(fbSession)
 	insertPosts(paging)
+}
+
+// DispatchFreshPosts picks up the posts Mongo which have is_parsed=false and sends them to C3PO
+func DispatchFreshPosts() {
+	// Initialize Mongo client
+	mongoClient, ctx, cancel, err := db.GetMongoClient()
+	defer func() {
+		cancel()
+		if err = mongoClient.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+	feedCollection := mongoClient.Database(mongoDbName).Collection(feedCollectionName)
+
+	cur, err := feedCollection.Find(ctx, bson.M{"is_parsed": false})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer func() {
+		err := cur.Close(ctx)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+	for cur.Next(ctx) {
+		var result MongoPost
+		err := cur.Decode(&result)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// POST request to C-3PO
+		requestBody, err := json.Marshal(result)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		resp, err := http.Post(
+			fmt.Sprintf("%s/v1/data/post", utils.GetEnv("C3PO_URI", "")),
+			"application/json",
+			bytes.NewBuffer(requestBody))
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println(string(body))
+
+		err = resp.Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
 }

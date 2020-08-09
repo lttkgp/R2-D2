@@ -15,7 +15,11 @@ import (
 func main() {
 	cronLogger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
 	c := cron.New(cron.WithChain(cron.SkipIfStillRunning(cronLogger)))
-	_, err := c.AddFunc("@every 10s", facebook.BootstrapDb)
+	_, err := c.AddFunc("@every 1h", facebook.BootstrapDb)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	_, err = c.AddFunc("@every 5s", facebook.DispatchFreshPosts)
 	if err != nil {
 		log.Fatalln(err)
 	}
