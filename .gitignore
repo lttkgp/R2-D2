@@ -18,5 +18,8 @@
 # IntelliJ
 .idea
 
+# Ignore the generated binary
+bin
+
 # Environment variables
 .env
