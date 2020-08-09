@@ -33,6 +33,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quasilyte/go-ruleguard v0.1.3 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200419152657-af9db7f4a3ab // indirect
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/securego/gosec/v2 v2.4.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.6.0 // indirect

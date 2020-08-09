@@ -2,16 +2,24 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/lttkgp/R2-D2/internal/facebook"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
-	facebook.BootstrapDb()
+	cronLogger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
+	c := cron.New(cron.WithChain(cron.SkipIfStillRunning(cronLogger)))
+	_, err := c.AddFunc("@every 10s", facebook.BootstrapDb)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	c.Start()
 
 	// Initialize Swagger
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")

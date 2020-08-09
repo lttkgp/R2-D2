@@ -16,7 +16,7 @@ import (
 
 const fbGroupID = "1488511748129645"
 const mongoDbName = "lttkgp"
-const mongoCollectionName = "feed"
+const feedCollectionName = "feed"
 
 var fbFeedParams = fb.Params{"fields": `
 id,created_time,from,link,message,message_tags,name,object_id,permalink_url,properties,
@@ -56,7 +56,7 @@ func getFacebookSession() *fb.Session {
 	return fbSession
 }
 
-func updateOrInsert(ctx context.Context, collection *mongo.Collection, mongoPost MongoPost) {
+func updateOrInsertPost(ctx context.Context, collection *mongo.Collection, mongoPost MongoPost) {
 	shouldUpsert := true
 	replaceOptions := options.ReplaceOptions{Upsert: &shouldUpsert}
 	replaceFilter := bson.M{"facebook_id": mongoPost.FacebookID}
@@ -76,7 +76,7 @@ func insertPosts(paging *fb.PagingResult) {
 			panic(err)
 		}
 	}()
-	collection := mongoClient.Database(mongoDbName).Collection(mongoCollectionName)
+	feedCollection := mongoClient.Database(mongoDbName).Collection(feedCollectionName)
 
 	// Iterate through page results
 	for {
@@ -92,7 +92,7 @@ func insertPosts(paging *fb.PagingResult) {
 				FacebookID:   facebookID,
 				FacebookPost: post,
 			}
-			updateOrInsert(ctx, collection, mongoPost)
+			updateOrInsertPost(ctx, feedCollection, mongoPost)
 		}
 
 		// Break on last page
@@ -109,6 +109,7 @@ func insertPosts(paging *fb.PagingResult) {
 // BootstrapDb Bootstrap MongoDB with Facebook posts
 func BootstrapDb() {
 	fbSession := getFacebookSession()
+	fbSession.Version = "v7.0"
 	feedResp, err := fbSession.Get(fmt.Sprintf("%s/feed", fbGroupID), fbFeedParams)
 	if err != nil {
 		log.Fatalln(err)
