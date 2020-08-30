@@ -1,28 +1,55 @@
-# github.com/Djarvur/go-err113 v0.1.0
-## explicit
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
 # github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 github.com/asaskevich/govalidator
+# github.com/aws/aws-sdk-go v1.34.13
+## explicit
+github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/awserr
+github.com/aws/aws-sdk-go/aws/awsutil
+github.com/aws/aws-sdk-go/aws/client
+github.com/aws/aws-sdk-go/aws/client/metadata
+github.com/aws/aws-sdk-go/aws/corehandlers
+github.com/aws/aws-sdk-go/aws/credentials
+github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
+github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
+github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/stscreds
+github.com/aws/aws-sdk-go/aws/crr
+github.com/aws/aws-sdk-go/aws/csm
+github.com/aws/aws-sdk-go/aws/defaults
+github.com/aws/aws-sdk-go/aws/ec2metadata
+github.com/aws/aws-sdk-go/aws/endpoints
+github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/aws/session
+github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
+github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/sdkmath
+github.com/aws/aws-sdk-go/internal/sdkrand
+github.com/aws/aws-sdk-go/internal/sdkuri
+github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/internal/strings
+github.com/aws/aws-sdk-go/internal/sync/singleflight
+github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
+github.com/aws/aws-sdk-go/private/protocol/jsonrpc
+github.com/aws/aws-sdk-go/private/protocol/query
+github.com/aws/aws-sdk-go/private/protocol/query/queryutil
+github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/service/dynamodb
+github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute
+github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/cenkalti/backoff/v4 v4.0.2
 ## explicit
 github.com/cenkalti/backoff/v4
-# github.com/cloudfoundry-incubator/candiedyaml v0.0.0-20170901234223-a41693b7b7af
-## explicit
-# github.com/dgryski/go-minhash v0.0.0-20190315135803-ad340ca03076
-## explicit
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
-# github.com/ekzhu/minhash-lsh v0.0.0-20190924033628-faac2c6342f8
-## explicit
-# github.com/emicklei/dot v0.11.0
-## explicit
-# github.com/frapposelli/wwhrd v0.3.0
-## explicit
-# github.com/go-co-op/gocron v0.3.0
-## explicit
 # github.com/go-openapi/analysis v0.19.10
 github.com/go-openapi/analysis
 github.com/go-openapi/analysis/internal
@@ -59,156 +86,47 @@ github.com/go-openapi/swag
 github.com/go-openapi/validate
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
-# github.com/gogo/protobuf v1.3.1
-## explicit
-# github.com/golang/snappy v0.0.1
-github.com/golang/snappy
-# github.com/golangci/golangci-lint v1.29.0
-## explicit
-# github.com/golangci/misspell v0.3.5
-## explicit
-# github.com/golangci/revgrep v0.0.0-20180812185044-276a5c0a1039
-## explicit
 # github.com/google/go-cmp v0.5.1
-## explicit
-# github.com/gostaticanalysis/analysisutil v0.1.0
-## explicit
-# github.com/hhatto/gorst v0.0.0-20181029133204-ca9f730cac5b
 ## explicit
 # github.com/huandu/facebook/v2 v2.5.2
 ## explicit
 github.com/huandu/facebook/v2
-# github.com/jdkato/prose v1.2.0
-## explicit
 # github.com/jessevdk/go-flags v1.4.0
 ## explicit
 github.com/jessevdk/go-flags
-# github.com/jirfag/go-printf-func-name v0.0.0-20200119135958-7558a9eaa5af
+# github.com/jmespath/go-jmespath v0.3.0
+github.com/jmespath/go-jmespath
+# github.com/joho/godotenv v1.3.0
 ## explicit
-# github.com/klauspost/compress v1.10.5
-github.com/klauspost/compress/fse
-github.com/klauspost/compress/huff0
-github.com/klauspost/compress/snappy
-github.com/klauspost/compress/zstd
-github.com/klauspost/compress/zstd/internal/xxhash
+github.com/joho/godotenv
+github.com/joho/godotenv/autoload
 # github.com/mailru/easyjson v0.7.1
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/matoous/godox v0.0.0-20200801072554-4fb83dc2941e
-## explicit
 # github.com/mitchellh/mapstructure v1.3.3
 ## explicit
 github.com/mitchellh/mapstructure
-# github.com/pelletier/go-toml v1.8.0
-## explicit
-# github.com/pkg/errors v0.9.1
-## explicit
-github.com/pkg/errors
-# github.com/quasilyte/go-ruleguard v0.1.3
-## explicit
-# github.com/quasilyte/regex/syntax v0.0.0-20200419152657-af9db7f4a3ab
-## explicit
 # github.com/robfig/cron/v3 v3.0.1
 ## explicit
 github.com/robfig/cron/v3
-# github.com/securego/gosec/v2 v2.4.0
-## explicit
-# github.com/sergi/go-diff v1.1.0
-## explicit
-# github.com/sirupsen/logrus v1.6.0
-## explicit
-# github.com/spf13/afero v1.3.2
-## explicit
-# github.com/spf13/cast v1.3.1
-## explicit
-# github.com/spf13/jwalterweatherman v1.1.0
-## explicit
-# github.com/spf13/viper v1.7.1
-## explicit
-# github.com/stretchr/objx v0.3.0
-## explicit
-# github.com/tdakkota/asciicheck v0.0.0-20200416200610-e657995f937b
-## explicit
-# github.com/tetafro/godot v0.4.8
-## explicit
-# github.com/timakin/bodyclose v0.0.0-20200424151742-cb6215831a94
-## explicit
-# github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
-github.com/xdg/scram
-# github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc
-github.com/xdg/stringprep
 # go.mongodb.org/mongo-driver v1.3.4
-## explicit
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec
 go.mongodb.org/mongo-driver/bson/bsonoptions
 go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
-go.mongodb.org/mongo-driver/event
-go.mongodb.org/mongo-driver/internal
-go.mongodb.org/mongo-driver/mongo
-go.mongodb.org/mongo-driver/mongo/options
-go.mongodb.org/mongo-driver/mongo/readconcern
-go.mongodb.org/mongo-driver/mongo/readpref
-go.mongodb.org/mongo-driver/mongo/writeconcern
-go.mongodb.org/mongo-driver/tag
-go.mongodb.org/mongo-driver/version
-go.mongodb.org/mongo-driver/x/bsonx
 go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-go.mongodb.org/mongo-driver/x/mongo/driver
-go.mongodb.org/mongo-driver/x/mongo/driver/address
-go.mongodb.org/mongo-driver/x/mongo/driver/auth
-go.mongodb.org/mongo-driver/x/mongo/driver/auth/internal/gssapi
-go.mongodb.org/mongo-driver/x/mongo/driver/connstring
-go.mongodb.org/mongo-driver/x/mongo/driver/description
-go.mongodb.org/mongo-driver/x/mongo/driver/dns
-go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt
-go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt/options
-go.mongodb.org/mongo-driver/x/mongo/driver/operation
-go.mongodb.org/mongo-driver/x/mongo/driver/session
-go.mongodb.org/mongo-driver/x/mongo/driver/topology
-go.mongodb.org/mongo-driver/x/mongo/driver/uuid
-go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage
-# golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-## explicit
-golang.org/x/crypto/pbkdf2
-# golang.org/x/exp v0.0.0-20200513190911-00229845015e
-## explicit
 # golang.org/x/net v0.0.0-20200707034311-ab3426394381
 ## explicit
 golang.org/x/net/idna
 golang.org/x/net/netutil
-# golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3
-## explicit
 # golang.org/x/text v0.3.3
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/tools v0.0.0-20200731060945-b5fad4ed8dd6
-## explicit
-# gonum.org/v1/gonum v0.7.0
-## explicit
-# gopkg.in/ini.v1 v1.57.0
-## explicit
-# gopkg.in/src-d/go-billy-siva.v4 v4.6.0
-## explicit
-# gopkg.in/src-d/go-license-detector.v3 v3.1.0
-## explicit
-# gopkg.in/src-d/go-siva.v1 v1.8.0
-## explicit
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
-# honnef.co/go/tools v0.0.1-2020.1.5
-## explicit
-# mvdan.cc/gofumpt v0.0.0-20200731215418-7036e194a6ab
-## explicit
-# mvdan.cc/unparam v0.0.0-20200501210554-b37ab49443f7
-## explicit
-# sourcegraph.com/sqs/pbtypes v1.0.0
-## explicit

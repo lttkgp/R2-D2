@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/lttkgp/R2-D2/internal/facebook"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi"
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
 	"github.com/robfig/cron/v3"
@@ -15,11 +15,11 @@ import (
 func main() {
 	cronLogger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
 	c := cron.New(cron.WithChain(cron.SkipIfStillRunning(cronLogger)))
-	_, err := c.AddFunc("@every 10h", facebook.BootstrapDb)
+	_, err := c.AddFunc("@every 10h", BootstrapDb)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	_, err = c.AddFunc("@every 10s", facebook.DispatchFreshPosts)
+	_, err = c.AddFunc("@every 10s", DispatchFreshPosts)
 	if err != nil {
 		log.Fatalln(err)
 	}
