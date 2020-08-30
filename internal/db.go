@@ -105,6 +105,72 @@ func MarkPostAsParsed(dynamoSession *dynamodb.DynamoDB, postData PostData) bool 
 	return true
 }
 
+// dispatchScanOutput parses and sends posts from a DB scan page to C-3PO and marks the post as read if successful
+func dispatchScanOutput(dynamoSession *dynamodb.DynamoDB, output *dynamodb.ScanOutput) {
+	for _, entry := range output.Items {
+		// Parse entry
+		var postData PostData
+		err := unmarshalMapWithEmptyCollections(entry, &postData)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		// Prepare request
+		requestBody, err := json.Marshal(C3poRequest{FacebookPost: postData.FacebookPost})
+		if err != nil {
+			log.Fatalln(err)
+		}
+		req, err := http.NewRequest(
+			"POST",
+			fmt.Sprintf("%s/v1/data/post", GetEnv("C3PO_URI", "")),
+			bytes.NewBuffer(requestBody))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		req.Header.Set("whoami", whoamiHeaderVal)
+		req.Header.Set("Content-Type", "application/json")
+
+		// Make POST request to C3PO
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+			resp.Body.Close()
+			continue
+		}
+
+		// Parse response body as bytes
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			resp.Body.Close()
+			continue
+		}
+
+		// Parse response
+		var c3poResponse C3poResponse
+		err = json.Unmarshal(body, &c3poResponse)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		if c3poResponse.Success {
+			markParsedSuccess := MarkPostAsParsed(dynamoSession, postData)
+			if markParsedSuccess {
+				log.Println(fmt.Sprintf("Successfully parsed postId=%s", postData.FacebookID))
+			} else {
+				log.Println(fmt.Sprintf("Failed to parse postId=%s", postData.FacebookID))
+			}
+		} else {
+			log.Println(fmt.Sprintf("Failed to parse postId=%s", postData.FacebookID))
+		}
+
+		err = resp.Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+}
+
 // DispatchFreshPosts picks up the posts which have is_parsed=false and sends them to C3PO
 func DispatchFreshPosts() {
 	if whoamiHeaderVal == "" {
@@ -124,73 +190,15 @@ func DispatchFreshPosts() {
 	}
 
 	err := dynamoSession.ScanPages(&fetchUnparsedPostsQueryNew, func(output *dynamodb.ScanOutput, b bool) bool {
-		// Parse entries in current page
-		for _, entry := range output.Items {
-			// Parse entry
-			var postData PostData
-			err := unmarshalMapWithEmptyCollections(entry, &postData)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			// Prepare request
-			requestBody, err := json.Marshal(C3poRequest{FacebookPost: postData.FacebookPost})
-			if err != nil {
-				log.Fatalln(err)
-			}
-			req, err := http.NewRequest(
-				"POST",
-				fmt.Sprintf("%s/v1/data/post", GetEnv("C3PO_URI", "")),
-				bytes.NewBuffer(requestBody))
-			if err != nil {
-				log.Fatalln(err)
-			}
-			req.Header.Set("whoami", whoamiHeaderVal)
-			req.Header.Set("Content-Type", "application/json")
-
-			// Make POST request to C3PO
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				log.Println(err)
-				resp.Body.Close()
-				continue
-			}
-
-			// Parse response body as bytes
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Println(err)
-				resp.Body.Close()
-				continue
-			}
-
-			// Parse response
-			var c3poResponse C3poResponse
-			err = json.Unmarshal(body, &c3poResponse)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			if c3poResponse.Success {
-				markParsedSuccess := MarkPostAsParsed(dynamoSession, postData)
-				if markParsedSuccess {
-					log.Println(fmt.Sprintf("Successfully parsed postId=%s", postData.FacebookID))
-				} else {
-					log.Println(fmt.Sprintf("Failed to parse postId=%s", postData.FacebookID))
-				}
-			} else {
-				log.Println(fmt.Sprintf("Failed to parse postId=%s", postData.FacebookID))
-			}
-
-			err = resp.Body.Close()
-			if err != nil {
-				log.Fatalln(err)
-			}
+		dispatchScanOutput(dynamoSession, output)
+		if len(output.LastEvaluatedKey) != 0 {
+			fetchUnparsedPostsQueryNew.SetExclusiveStartKey(output.LastEvaluatedKey)
+			return true
+		} else {
+			return false
 		}
-
-		return true
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 }
