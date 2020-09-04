@@ -20,9 +20,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewHelloAPI creates a new Hello instance
-func NewHelloAPI(spec *loads.Document) *HelloAPI {
-	return &HelloAPI{
+// NewR2d2API creates a new R2d2 instance
+func NewR2d2API(spec *loads.Document) *R2d2API {
+	return &R2d2API{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
@@ -48,8 +48,8 @@ func NewHelloAPI(spec *loads.Document) *HelloAPI {
 	}
 }
 
-/*HelloAPI Facebook connector for C-3PO that manages & exposes Facebook group data */
-type HelloAPI struct {
+/*R2d2API Facebook connector for C-3PO that manages & exposes Facebook group data */
+type R2d2API struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -103,42 +103,42 @@ type HelloAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *HelloAPI) SetDefaultProduces(mediaType string) {
+func (o *R2d2API) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *HelloAPI) SetDefaultConsumes(mediaType string) {
+func (o *R2d2API) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *HelloAPI) SetSpec(spec *loads.Document) {
+func (o *R2d2API) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *HelloAPI) DefaultProduces() string {
+func (o *R2d2API) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *HelloAPI) DefaultConsumes() string {
+func (o *R2d2API) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *HelloAPI) Formats() strfmt.Registry {
+func (o *R2d2API) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *HelloAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *R2d2API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the HelloAPI
-func (o *HelloAPI) Validate() error {
+// Validate validates the registrations in the R2d2API
+func (o *R2d2API) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -164,23 +164,23 @@ func (o *HelloAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *HelloAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *R2d2API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *HelloAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *R2d2API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	return nil
 }
 
 // Authorizer returns the registered authorizer
-func (o *HelloAPI) Authorizer() runtime.Authorizer {
+func (o *R2d2API) Authorizer() runtime.Authorizer {
 	return nil
 }
 
 // ConsumersFor gets the consumers for the specified media types.
 // MIME type parameters are ignored here.
-func (o *HelloAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+func (o *R2d2API) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
@@ -197,7 +197,7 @@ func (o *HelloAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer
 
 // ProducersFor gets the producers for the specified media types.
 // MIME type parameters are ignored here.
-func (o *HelloAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+func (o *R2d2API) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
@@ -215,7 +215,7 @@ func (o *HelloAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *HelloAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *R2d2API) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -230,8 +230,8 @@ func (o *HelloAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the hello API
-func (o *HelloAPI) Context() *middleware.Context {
+// Context returns the middleware context for the r2d2 API
+func (o *R2d2API) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -239,7 +239,7 @@ func (o *HelloAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *HelloAPI) initHandlerCache() {
+func (o *R2d2API) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
@@ -253,7 +253,7 @@ func (o *HelloAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *HelloAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *R2d2API) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -263,24 +263,24 @@ func (o *HelloAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
-func (o *HelloAPI) Init() {
+func (o *R2d2API) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 }
 
 // RegisterConsumer allows you to add (or override) a consumer for a media type.
-func (o *HelloAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+func (o *R2d2API) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
 	o.customConsumers[mediaType] = consumer
 }
 
 // RegisterProducer allows you to add (or override) a producer for a media type.
-func (o *HelloAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+func (o *R2d2API) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }
 
 // AddMiddlewareFor adds a http middleware to existing handler
-func (o *HelloAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+func (o *R2d2API) AddMiddlewareFor(method, path string, builder middleware.Builder) {
 	um := strings.ToUpper(method)
 	if path == "/" {
 		path = ""

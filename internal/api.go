@@ -15,7 +15,7 @@ func initializeAPIServer(logger *zap.Logger) {
 		logger.Fatal("Failed to parse Swagger config", zap.Error(err))
 	}
 
-	api := operations.NewHelloAPI(swaggerSpec)
+	api := operations.NewR2d2API(swaggerSpec)
 	server := restapi.NewServer(api)
 
 	defer func() {

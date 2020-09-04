@@ -13,13 +13,13 @@ import (
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../server --name Hello --spec ../../swagger.yml --exclude-main
+//go:generate swagger generate server --target ../../server --name R2d2 --spec ../../swagger.yml --exclude-main
 
-func configureFlags(api *operations.HelloAPI) {
+func configureFlags(api *operations.R2d2API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.HelloAPI) http.Handler {
+func configureAPI(api *operations.R2d2API) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
