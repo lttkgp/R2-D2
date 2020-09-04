@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/cenkalti/backoff/v4"
 	fb "github.com/huandu/facebook/v2"
@@ -25,7 +28,7 @@ func retryNotifyFunc(err error, duration time.Duration) {
 	log.Println(fmt.Sprintf("Queued for retry after %s, error=%s", duration, err))
 }
 
-func getFbAccessToken(fbApp *fb.App) string {
+func getFbAccessToken(fbApp *fb.App, logger *zap.Logger) string {
 	longAccessToken := GetEnv("FB_LONG_ACCESS_TOKEN", "")
 	if longAccessToken == "" {
 		shortAccessToken := GetEnv("FB_SHORT_ACCESS_TOKEN", "")
@@ -34,34 +37,47 @@ func getFbAccessToken(fbApp *fb.App) string {
 		}
 		var err error
 		longAccessToken, _, err = fbApp.ExchangeToken(shortAccessToken)
+		if err != nil {
+			logger.Warn("Failed exchanging short access token for long access token", zap.Error(err))
+			return shortAccessToken
+		}
 
 		// Update env
 		UpdateEnvFile("FB_LONG_ACCESS_TOKEN", longAccessToken)
-		setEnvErr := os.Setenv("FB_LONG_ACCESS_TOKEN", longAccessToken)
-		if err != nil || setEnvErr != nil {
-			return ""
+		err = os.Setenv("FB_LONG_ACCESS_TOKEN", longAccessToken)
+		if err != nil {
+			logger.Warn("Unable to write FB long access token to env file", zap.Error(err))
 		}
 	}
 	return longAccessToken
 }
 
-func getFacebookSession() *fb.Session {
+func getFacebookSession(logger *zap.Logger) (*fb.Session, error) {
 	var fbApp = fb.New(GetEnv("FB_APP_ID", ""), GetEnv("FB_APP_SECRET", ""))
 	fbApp.RedirectUri = "https://beta.lttkgp.com"
-	fbSession := fbApp.Session(getFbAccessToken(fbApp))
+	sessionToken := getFbAccessToken(fbApp, logger)
+	if sessionToken == "" {
+		return nil, errors.New("neither short nor long access token present")
+	}
+	fbSession := fbApp.Session(sessionToken)
 	fbSession.RFC3339Timestamps = true
 
-	return fbSession
+	return fbSession, nil
 }
 
-// BootstrapDb bootstraps the DB with Facebook posts
-func BootstrapDb() {
+// FetchLatestPosts bootstraps the DB with Facebook posts
+func FetchLatestPosts(logger *zap.Logger) error {
 	// Initialize Facebook session
-	fbSession := getFacebookSession()
+	fbSession, err := getFacebookSession(logger)
+	if err != nil {
+		logger.Fatal("Unable to create Facebook session", zap.Error(err))
+	}
 	fbSession.Version = "v8.0"
+	logger.Debug("Created Facebook session", zap.Any("fbSession", fbSession))
 
 	// Initialize Database session
 	dynamoSession := CreateDynamoSession()
+	logger.Debug("Created dynamoDB session", zap.Any("dynamoSession", dynamoSession))
 
 	// Configure exponential backoff for retries
 	exponentialBackoff := backoff.NewExponentialBackOff()
@@ -69,15 +85,20 @@ func BootstrapDb() {
 
 	// Fetch the first page of response
 	var feedResp fb.Result
-	err := backoff.RetryNotify(func() error {
+	err = backoff.RetryNotify(func() error {
 		var fbError error
 		feedResp, fbError = fbSession.Get(fmt.Sprintf("%s/feed", fbGroupID), fbFeedParams)
 		return fbError
 	}, exponentialBackoff, retryNotifyFunc)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Warn("Unable to schedule retry for feed fetch", zap.Error(err))
+		return err
 	}
-	paging, _ := feedResp.Paging(fbSession)
+	paging, err := feedResp.Paging(fbSession)
+	if err != nil {
+		logger.Warn("Feed result can't be used for paging", zap.Error(err))
+		return err
+	}
 
 	// Iterate through page results
 	for {
@@ -87,9 +108,10 @@ func BootstrapDb() {
 			var keyMetadata KeyMetadata
 			err := post.Decode(&keyMetadata)
 			if err != nil {
-				log.Fatalln(err)
+				logger.Error("Failed to decode key metadata from Facebook post", zap.Error(err))
+				continue
 			}
-			log.Println(keyMetadata)
+			logger.Debug("Extracted key metadata from Facebook post", zap.Object("keyMetadata", keyMetadata))
 
 			postData := PostData{
 				CreatedTime:  keyMetadata.CreatedTime,
@@ -99,21 +121,24 @@ func BootstrapDb() {
 			}
 
 			// Insert post to DB
-			UpdateOrInsertPost(dynamoSession, postData)
+			UpdateOrInsertPost(dynamoSession, postData, logger)
 		}
 
 		// Break on last page
 		var noMore bool
 		err := backoff.RetryNotify(func() error {
-			var fbError error
-			noMore, fbError = paging.Next()
-			return fbError
+			var pagingError error
+			noMore, pagingError = paging.Next()
+			return pagingError
 		}, exponentialBackoff, retryNotifyFunc)
 		if err != nil {
-			panic(err)
+			logger.Error("Failed paging through Facebook response", zap.Error(err))
+			return err
 		}
 		if noMore {
 			break
 		}
 	}
+
+	return nil
 }

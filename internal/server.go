@@ -4,53 +4,45 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime/middleware"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi"
-	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
 	"github.com/robfig/cron/v3"
+	"go.uber.org/zap"
 )
 
-func main() {
+func scheduleJobs(logger *zap.Logger) {
 	cronLogger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
 	c := cron.New(cron.WithChain(cron.SkipIfStillRunning(cronLogger)))
-	_, err := c.AddFunc("@every 10h", BootstrapDb)
+	_, err := c.AddFunc("@every 10h", func() {
+		fetchLatestError := FetchLatestPosts(logger)
+		if fetchLatestError != nil {
+			logger.Error("Fetching latest posts failed", zap.Error(fetchLatestError))
+		}
+	})
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal("Unable to start FetchLatestPosts scheduler", zap.Error(err))
 	}
-	_, err = c.AddFunc("@every 10s", DispatchFreshPosts)
+	_, err = c.AddFunc("@every 10s", func() {
+		dispatchError := DispatchFreshPosts(logger)
+		if dispatchError != nil {
+			logger.Error("Dispatching fresh posts failed", zap.Error(dispatchError))
+		}
+	})
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal("Unable to start DispatchFreshPosts scheduler", zap.Error(err))
 	}
 	c.Start()
+}
 
-	// Initialize Swagger
-	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	api := operations.NewHelloAPI(swaggerSpec)
-	server := restapi.NewServer(api)
-
+func main() {
+	// Logger setup
+	logger := GetLogger()
 	defer func() {
-		if err := server.Shutdown(); err != nil {
-			// error handle
-			log.Fatalln(err)
+		err := logger.Sync()
+		if err != nil {
+			logger.Warn("Unable to gracefully flush buffered log entries", zap.Error(err))
 		}
 	}()
 
-	server.Port = 8080
-	api.CheckHealthHandler = operations.CheckHealthHandlerFunc(Health)
-
-	// Start server which listening
-	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-//Health route returns OK
-func Health(operations.CheckHealthParams) middleware.Responder {
-	return operations.NewCheckHealthOK().WithPayload("OK")
+	scheduleJobs(logger)
+	initializeAPIServer(logger)
 }
