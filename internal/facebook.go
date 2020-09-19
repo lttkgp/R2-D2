@@ -8,11 +8,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-
-	"go.uber.org/zap"
-
 	"github.com/cenkalti/backoff/v4"
 	fb "github.com/huandu/facebook/v2"
+	"go.uber.org/zap"
 )
 
 const fbGroupID = "1488511748129645"

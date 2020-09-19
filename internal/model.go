@@ -3,9 +3,8 @@ package main
 import (
 	"time"
 
-	"go.uber.org/zap/zapcore"
-
 	fb "github.com/huandu/facebook/v2"
+	"go.uber.org/zap/zapcore"
 )
 
 // KeyMetadata describes the important fields to extract from Graph API response

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
