@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+
 	"go.uber.org/zap"
 
 	"github.com/cenkalti/backoff/v4"
@@ -66,7 +68,7 @@ func getFacebookSession(logger *zap.Logger) (*fb.Session, error) {
 }
 
 // FetchLatestPosts bootstraps the DB with Facebook posts
-func FetchLatestPosts(logger *zap.Logger) error {
+func FetchLatestPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
 	// Initialize Facebook session
 	fbSession, err := getFacebookSession(logger)
 	if err != nil {
@@ -74,10 +76,6 @@ func FetchLatestPosts(logger *zap.Logger) error {
 	}
 	fbSession.Version = "v8.0"
 	logger.Debug("Created Facebook session", zap.Any("fbSession", fbSession))
-
-	// Initialize Database session
-	dynamoSession := CreateDynamoSession()
-	logger.Debug("Created dynamoDB session", zap.Any("dynamoSession", dynamoSession))
 
 	// Configure exponential backoff for retries
 	exponentialBackoff := backoff.NewExponentialBackOff()

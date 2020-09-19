@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"time"
 
 	"go.uber.org/zap"
@@ -21,10 +22,95 @@ var sortKey = "created_time"
 var parsedGsiIndexName = "parsed_index"
 var parsedGsiSortKey = "is_parsed"
 
-// CreateDynamoSession creates a DynamoDB session
-func CreateDynamoSession() *dynamodb.DynamoDB {
-	sess := session.Must(session.NewSession())
-	return dynamodb.New(sess)
+func createDynamoSession() *dynamodb.DynamoDB {
+	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "")
+	if dynamoEndpoint != "" {
+		return dynamodb.New(session.Must(session.NewSession(&aws.Config{
+			Endpoint: aws.String(dynamoEndpoint),
+		})))
+	}
+	return dynamodb.New(session.Must(session.NewSession()))
+}
+
+func createTable(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
+	tableCreateInput := dynamodb.CreateTableInput{
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String(partitionKey),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String(sortKey),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String(parsedGsiSortKey),
+				AttributeType: aws.String("S"),
+			},
+		},
+		BillingMode: aws.String("PROVISIONED"),
+		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+			{
+				IndexName: aws.String(parsedGsiIndexName),
+				KeySchema: []*dynamodb.KeySchemaElement{
+					{
+						AttributeName: aws.String(partitionKey),
+						KeyType:       aws.String("HASH"),
+					},
+					{
+						AttributeName: aws.String(parsedGsiSortKey),
+						KeyType:       aws.String("RANGE"),
+					},
+				},
+				Projection: &dynamodb.Projection{
+					ProjectionType: aws.String("ALL"),
+				},
+				ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(1),
+					WriteCapacityUnits: aws.Int64(1),
+				},
+			},
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String(partitionKey),
+				KeyType:       aws.String("HASH"),
+			},
+			{
+				AttributeName: aws.String(sortKey),
+				KeyType:       aws.String("RANGE"),
+			},
+		},
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(1),
+			WriteCapacityUnits: aws.Int64(1),
+		},
+		TableName: aws.String(tableName),
+	}
+	_, err := dynamoSession.CreateTable(&tableCreateInput)
+	if err != nil {
+		logger.Error("Failed creating table", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+// InitializeDynamoSession creates a DynamoDB session
+func InitializeDynamoSession(logger *zap.Logger) (*dynamodb.DynamoDB, error) {
+	dynamoSession := createDynamoSession()
+	_, err := dynamoSession.DescribeTable(&dynamodb.DescribeTableInput{TableName: aws.String(tableName)})
+	if err != nil {
+		var resourceNotFoundException *dynamodb.ResourceNotFoundException
+		if errors.As(err, &resourceNotFoundException) {
+			logger.Warn("Table doesn't exist. Creating...")
+			createTableErr := createTable(dynamoSession, logger)
+			if createTableErr != nil {
+				return nil, createTableErr
+			}
+		}
+		return nil, err
+	}
+	return dynamoSession, nil
 }
 
 func marshalMapWithEmptyCollections(in interface{}) (map[string]*dynamodb.AttributeValue, error) {

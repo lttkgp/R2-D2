@@ -82,14 +82,10 @@ func dispatchItem(dynamoSession *dynamodb.DynamoDB, entry map[string]*dynamodb.A
 }
 
 // DispatchFreshPosts picks up the posts which have is_parsed=false and sends them to C3PO
-func DispatchFreshPosts(logger *zap.Logger) error {
+func DispatchFreshPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
 	if whoamiHeaderVal == "" {
 		logger.Fatal("C-3PO header env variable `WHOAMI` not present")
 	}
-
-	// Create a DynamoDB session
-	dynamoSession := CreateDynamoSession()
-	logger.Debug("Created dynamoDB session", zap.Any("dynamoSession", dynamoSession))
 
 	// Fetch all posts which are not yet parsed
 	fetchUnparsedPostsQueryNew := dynamodb.ScanInput{
