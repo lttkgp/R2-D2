@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -22,10 +23,17 @@ var parsedGsiIndexName = "parsed_index"
 var parsedGsiSortKey = "is_parsed"
 
 func createDynamoSession() *dynamodb.DynamoDB {
-	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "")
+	// Sensible defaults useful for local development
+	awsAccessKey := GetEnv("AWS_ACCESS_KEY_ID", "DEFAULT_KEY")
+	awsSecretKey := GetEnv("AWS_SECRET_ACCESS_KEY", "DEFAULT_SECRET")
+	awsDefaultRegion := GetEnv("AWS_REGION", "ap-south-1")
+	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "http://host.docker.internal:8001")
+
 	if dynamoEndpoint != "" {
 		return dynamodb.New(session.Must(session.NewSession(&aws.Config{
-			Endpoint: aws.String(dynamoEndpoint),
+			Credentials: credentials.NewStaticCredentials(awsAccessKey, awsSecretKey, ""),
+			Endpoint:    aws.String(dynamoEndpoint),
+			Region:      aws.String(awsDefaultRegion),
 		})))
 	}
 	return dynamodb.New(session.Must(session.NewSession()))
