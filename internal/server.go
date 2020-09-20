@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -12,8 +13,11 @@ import (
 
 func scheduleJobs(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) {
 	cronLogger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
+
+	// Start the scheduler to fetch latest Facebook posts
+	fbFetchFrequency := GetEnv("FB_FETCH_FREQUENCY", "300")
 	c := cron.New(cron.WithChain(cron.SkipIfStillRunning(cronLogger)))
-	_, err := c.AddFunc("@every 15s", func() {
+	_, err := c.AddFunc(fmt.Sprintf("@every %ss", fbFetchFrequency), func() {
 		fetchLatestError := FetchLatestPosts(dynamoSession, logger)
 		if fetchLatestError != nil {
 			logger.Error("Fetching latest posts failed", zap.Error(fetchLatestError))
@@ -22,7 +26,10 @@ func scheduleJobs(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) {
 	if err != nil {
 		logger.Fatal("Unable to start FetchLatestPosts scheduler", zap.Error(err))
 	}
-	_, err = c.AddFunc("@every 15s", func() {
+
+	// Start the scheduler to dispatch posts to C-3PO
+	dispatcherFrequency := GetEnv("DISPATCHER_FREQUENCY", "150")
+	_, err = c.AddFunc(fmt.Sprintf("@every %ss", dispatcherFrequency), func() {
 		dispatchError := DispatchFreshPosts(dynamoSession, logger)
 		if dispatchError != nil {
 			logger.Error("Dispatching fresh posts failed", zap.Error(dispatchError))
