@@ -27,7 +27,7 @@ func createDynamoSession() *dynamodb.DynamoDB {
 	awsAccessKey := GetEnv("AWS_ACCESS_KEY_ID", "DEFAULT_KEY")
 	awsSecretKey := GetEnv("AWS_SECRET_ACCESS_KEY", "DEFAULT_SECRET")
 	awsDefaultRegion := GetEnv("AWS_REGION", "ap-south-1")
-	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "http://host.docker.internal:8001")
+	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "")
 
 	if dynamoEndpoint != "" {
 		return dynamodb.New(session.Must(session.NewSession(&aws.Config{
