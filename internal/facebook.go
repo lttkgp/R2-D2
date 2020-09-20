@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -75,6 +76,14 @@ func FetchLatestPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) erro
 	fbSession.Version = "v8.0"
 	logger.Debug("Created Facebook session", zap.Any("fbSession", fbSession))
 
+	// Keep count of parsed posts
+	parsedCount := 0
+	latestCheckThreshold := GetEnv("LATEST_CHECK_THRESHOLD", "300")
+	maxParsedCount, err := strconv.Atoi(latestCheckThreshold)
+	if err != nil {
+		maxParsedCount = 300
+	}
+
 	// Configure exponential backoff for retries
 	exponentialBackoff := backoff.NewExponentialBackOff()
 	exponentialBackoff.MaxInterval = 24 * time.Hour
@@ -118,6 +127,11 @@ func FetchLatestPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) erro
 
 			// Insert post to DB
 			UpdateOrInsertPost(dynamoSession, postData, logger)
+			parsedCount += 1
+		}
+
+		if parsedCount >= maxParsedCount {
+			break
 		}
 
 		// Break on last page
