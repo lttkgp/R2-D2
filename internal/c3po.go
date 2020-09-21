@@ -87,15 +87,16 @@ func DispatchFreshPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) er
 	}
 
 	// Fetch all posts which are not yet parsed
-	fetchUnparsedPostsQueryNew := dynamodb.ScanInput{
-		ExpressionAttributeNames:  map[string]*string{"#isParsed": &parsedGsiSortKey},
+	fetchUnparsedPostsQuery := dynamodb.QueryInput{
+		ExpressionAttributeNames:  map[string]*string{"#isParsed": &parsedGsiPartitionKey},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":isParsed": {S: aws.String("false")}},
-		FilterExpression:          aws.String("#isParsed = :isParsed"),
-		IndexName:                 &parsedGsiIndexName,
-		TableName:                 &tableName,
+		IndexName:                 aws.String(parsedGsiIndexName),
+		KeyConditionExpression:    aws.String("#isParsed = :isParsed"),
+		ScanIndexForward:          aws.Bool(false),
+		TableName:                 aws.String(tableName),
 	}
 
-	err := dynamoSession.ScanPages(&fetchUnparsedPostsQueryNew, func(output *dynamodb.ScanOutput, b bool) bool {
+	err := dynamoSession.QueryPages(&fetchUnparsedPostsQuery, func(output *dynamodb.QueryOutput, b bool) bool {
 		for _, entry := range output.Items {
 			err := dispatchItem(dynamoSession, entry, logger)
 			if err != nil {
@@ -105,13 +106,14 @@ func DispatchFreshPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) er
 		}
 
 		if len(output.LastEvaluatedKey) != 0 {
-			fetchUnparsedPostsQueryNew.SetExclusiveStartKey(output.LastEvaluatedKey)
+			fetchUnparsedPostsQuery.SetExclusiveStartKey(output.LastEvaluatedKey)
 			return true
 		}
 		return false
 	})
+
 	if err != nil {
-		logger.Warn("Failed scanning DB pages", zap.Error(err))
+		logger.Warn("Failed querying index for dispatching", zap.Error(err))
 		return err
 	}
 
