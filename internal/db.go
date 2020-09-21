@@ -13,14 +13,16 @@ import (
 )
 
 // Constants
+/// Sort Key is common for table and index
+var sortKey = "created_time"
+
 /// Feed table
 var tableName = "feed"
 var partitionKey = "facebook_id"
-var sortKey = "created_time"
 
 /// GSI
 var parsedGsiIndexName = "parsed_index"
-var parsedGsiSortKey = "is_parsed"
+var parsedGsiPartitionKey = "is_parsed"
 
 func createDynamoSession() *dynamodb.DynamoDB {
 	// Sensible defaults useful for local development
@@ -51,7 +53,7 @@ func createTable(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
 				AttributeType: aws.String("S"),
 			},
 			{
-				AttributeName: aws.String(parsedGsiSortKey),
+				AttributeName: aws.String(parsedGsiPartitionKey),
 				AttributeType: aws.String("S"),
 			},
 		},
@@ -61,11 +63,11 @@ func createTable(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
 				IndexName: aws.String(parsedGsiIndexName),
 				KeySchema: []*dynamodb.KeySchemaElement{
 					{
-						AttributeName: aws.String(partitionKey),
+						AttributeName: aws.String(parsedGsiPartitionKey),
 						KeyType:       aws.String("HASH"),
 					},
 					{
-						AttributeName: aws.String(parsedGsiSortKey),
+						AttributeName: aws.String(sortKey),
 						KeyType:       aws.String("RANGE"),
 					},
 				},
@@ -114,6 +116,7 @@ func InitializeDynamoSession(logger *zap.Logger) (*dynamodb.DynamoDB, error) {
 			if createTableErr != nil {
 				return nil, createTableErr
 			}
+			return dynamoSession, nil
 		}
 		return nil, err
 	}
@@ -152,7 +155,7 @@ func UpdateOrInsertPost(dynamoSession *dynamodb.DynamoDB, postData PostData, log
 		sortKey:      {S: &createdTime},
 	}
 	expressionAttributeNames := map[string]*string{
-		"#I": &parsedGsiSortKey,
+		"#I": &parsedGsiPartitionKey,
 		"#P": aws.String("post"),
 	}
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
@@ -180,7 +183,7 @@ func MarkPostAsParsed(dynamoSession *dynamodb.DynamoDB, postData PostData, logge
 		sortKey:      {S: aws.String(postData.CreatedTime.Format(time.RFC3339))},
 	}
 	expressionAttributeNames := map[string]*string{
-		"#I": &parsedGsiSortKey,
+		"#I": &parsedGsiPartitionKey,
 	}
 
 	updateItemInput := dynamodb.UpdateItemInput{

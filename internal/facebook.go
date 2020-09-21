@@ -127,7 +127,7 @@ func FetchLatestPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) erro
 
 			// Insert post to DB
 			UpdateOrInsertPost(dynamoSession, postData, logger)
-			parsedCount += 1
+			parsedCount++
 		}
 
 		if parsedCount >= maxParsedCount {
