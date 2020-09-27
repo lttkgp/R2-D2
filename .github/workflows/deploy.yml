@@ -1,9 +1,11 @@
 name: Deploy to Amazon ECS
 
 on:
+  push:
+    branches: [ autodeploy-setup ]
   workflow_run:
     workflows: [ "Build and Deploy" ]
-    branches: [ master, autodeploy-setup ]
+    branches: [ master ]
     types:
       - completed
 
