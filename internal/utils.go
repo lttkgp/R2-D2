@@ -15,8 +15,8 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-// UpdateEnvFile writes the key=value pair to a .env file if it exists
-func UpdateEnvFile(key string, value string) {
+// updateEnvFile writes the key=value pair to a .env file if it exists
+func updateEnvFile(key string, value string) {
 	envFile := "./.env"
 	if fileExists(envFile) {
 		envMap, err := godotenv.Read(envFile)
