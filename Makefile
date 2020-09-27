@@ -38,6 +38,8 @@ get.tools:
 	go get -u github.com/go-swagger/go-swagger/cmd/swagger
  	# linter
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+    # goimports
+	go get -u golang.org/x/tools/cmd/goimports
 
 #-------------------------
 # Code generation
