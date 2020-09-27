@@ -58,7 +58,7 @@
       "workingDirectory": null,
       "secrets": [
         {
-          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:AWS_ACCESS_KEY_ID-PYkRIO ",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:AWS_ACCESS_KEY_ID-PYkRIO",
           "name": "AWS_ACCESS_KEY_ID"
         },
         {
