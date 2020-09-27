@@ -34,6 +34,8 @@ dev: swagger.validate swagger.doc generate format lint.fast build
 
 ## Retrieve tools packages
 get.tools:
+	# swagger
+	go get -u github.com/go-swagger/go-swagger/cmd/swagger
  	# linter
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
