@@ -13,8 +13,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.11 // indirect
-	github.com/go-swagger/go-swagger v0.25.0
-	github.com/golangci/golangci-lint v1.31.0
+	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/huandu/facebook/v2 v2.5.2
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/joho/godotenv v1.3.0
@@ -24,5 +23,6 @@ require (
 	go.mongodb.org/mongo-driver v1.4.1 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728
-	golang.org/x/tools v0.0.0-20200925191224-5d1fdd8fa346
+	golang.org/x/tools v0.0.0-20200925191224-5d1fdd8fa346 // indirect
+	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 )
