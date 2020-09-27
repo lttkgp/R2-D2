@@ -25,6 +25,9 @@ jobs:
     - name: Get build dependencies
       run: make get.tools
 
+    - name: Sync dependencies
+      run: make depend.tidy depend.verify depend.vendor
+
     - name: Build
       run: make dev
 
