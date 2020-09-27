@@ -1,0 +1,183 @@
+{
+  "ipcMode": null,
+  "executionRoleArn": "arn:aws:iam::848472830311:role/AWSTaskRoleForECS",
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "environmentFiles": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "secretOptions": null,
+        "options": {
+          "awslogs-group": "/ecs/r2d2-taskdef",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": null,
+      "portMappings": [
+        {
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "containerPort": 8080
+        }
+      ],
+      "command": null,
+      "linuxParameters": null,
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "C3PO_URI",
+          "value": "https://api.lttkgp.com"
+        },
+        {
+          "name": "DISPATCHER_FREQUENCY",
+          "value": "300"
+        },
+        {
+          "name": "FB_APP_ID",
+          "value": "757319888397921"
+        },
+        {
+          "name": "FB_FETCH_FREQUENCY",
+          "value": "600"
+        },
+        {
+          "name": "LATEST_CHECK_THRESHOLD",
+          "value": "100"
+        }
+      ],
+      "resourceRequirements": null,
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [],
+      "workingDirectory": null,
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:AWS_ACCESS_KEY_ID-PYkRIO",
+          "name": "AWS_ACCESS_KEY_ID"
+        },
+        {
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:AWS_SECRET_ACCESS_KEY-gE27qn",
+          "name": "AWS_SECRET_ACCESS_KEY"
+        },
+        {
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:FB_APP_SECRET-VkIaww",
+          "name": "FB_APP_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:FB_LONG_ACCESS_TOKEN-jFP9xx",
+          "name": "FB_LONG_ACCESS_TOKEN"
+        },
+        {
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:848472830311:secret:WHOAMI-HS4gPo",
+          "name": "WHOAMI"
+        }
+      ],
+      "dockerSecurityOptions": null,
+      "memory": null,
+      "memoryReservation": 512,
+      "volumesFrom": [],
+      "stopTimeout": null,
+      "image": "848472830311.dkr.ecr.ap-south-1.amazonaws.com/r2d2:latest",
+      "startTimeout": null,
+      "firelensConfiguration": null,
+      "dependsOn": null,
+      "disableNetworking": null,
+      "interactive": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": null,
+      "pseudoTerminal": null,
+      "user": null,
+      "readonlyRootFilesystem": null,
+      "dockerLabels": null,
+      "systemControls": null,
+      "privileged": null,
+      "name": "r2d2"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": "512",
+  "taskRoleArn": "arn:aws:iam::848472830311:role/AWSTaskRoleForECS",
+  "compatibilities": ["EC2", "FARGATE"],
+  "taskDefinitionArn": "arn:aws:ecs:ap-south-1:848472830311:task-definition/r2d2-taskdef:13",
+  "family": "r2d2-taskdef",
+  "requiresAttributes": [
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.secrets.asm.environment-variables"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.task-iam-role"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.execution-role-ecr-pull"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "ecs.capability.task-eni"
+    }
+  ],
+  "pidMode": null,
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "revision": 13,
+  "status": "ACTIVE",
+  "inferenceAccelerators": null,
+  "proxyConfiguration": null,
+  "volumes": []
+}

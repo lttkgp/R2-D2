@@ -13,7 +13,7 @@ import (
 	"github.com/lttkgp/R2-D2/pkg/swagger/server/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../server --name R2d2 --spec ../../swagger.yml --exclude-main
+//go:generate swagger generate server --target ../../server --name R2d2 --spec ../../swagger.yml --principal interface{} --exclude-main
 
 func configureFlags(api *operations.R2d2API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -28,6 +28,10 @@ func configureAPI(api *operations.R2d2API) http.Handler {
 	//
 	// Example:
 	// api.Logger = log.Printf
+
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

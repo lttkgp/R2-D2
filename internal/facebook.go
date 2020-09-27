@@ -44,7 +44,7 @@ func getFbAccessToken(fbApp *fb.App, logger *zap.Logger) string {
 		}
 
 		// Update env
-		UpdateEnvFile("FB_LONG_ACCESS_TOKEN", longAccessToken)
+		updateEnvFile("FB_LONG_ACCESS_TOKEN", longAccessToken)
 		err = os.Setenv("FB_LONG_ACCESS_TOKEN", longAccessToken)
 		if err != nil {
 			logger.Warn("Unable to write FB long access token to env file", zap.Error(err))
