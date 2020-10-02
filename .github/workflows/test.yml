@@ -7,7 +7,6 @@ on:
     branches: [ master ]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -23,13 +22,23 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get build dependencies
-      run: make get.tools
+      run: make get.ci-tools
 
     - name: Sync dependencies
       run: make depend.tidy depend.verify depend.vendor
 
     - name: Build
-      run: make dev
+      run: make swagger.validate swagger.doc generate format build
 
     - name: Test
       run: go test -v ./internal
+
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.31
