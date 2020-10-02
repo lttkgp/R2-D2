@@ -27,6 +27,16 @@ services:
       - dynamodb_data:/home/dynamodblocal
     networks:
       - lttkgp-network
+  mongodb:
+    image: 'mongo:4.2'
+    environment:
+      MONGO_INITDB_DATABASE: my_db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
 
 volumes:
   dynamodb_data:
