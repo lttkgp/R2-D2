@@ -41,6 +41,13 @@ get.tools:
     # goimports
 	go get -u golang.org/x/tools/cmd/goimports
 
+## Retrieve tools in GitHub Actions environment
+get.ci-tools:
+	# swagger
+	go get -u github.com/go-swagger/go-swagger/cmd/swagger
+    # goimports
+	go get -u golang.org/x/tools/cmd/goimports
+
 #-------------------------
 # Code generation
 #-------------------------
