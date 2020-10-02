@@ -23,7 +23,12 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get build dependencies
-      run: make get.tools
+      run: make get.ci-tools
+
+    - name: Fetch golangci-lint
+      uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.31
 
     - name: Sync dependencies
       run: make depend.tidy depend.verify depend.vendor
