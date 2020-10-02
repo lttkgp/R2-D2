@@ -3,7 +3,9 @@ version: "3.8"
 services:
   r2d2:
     container_name: r2-d2
-    build: ./
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
     ports:
       - "8080:8080"
     env_file:
@@ -11,6 +13,8 @@ services:
     command: "/r2-d2"
     depends_on:
       - dynamodb
+    volumes:
+      - ./internal:/build/internal
     networks:
       - lttkgp-network
   dynamodb:

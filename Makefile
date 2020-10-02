@@ -99,6 +99,10 @@ endif
 build:
 	GO111MODULE=on $(GO) build -o bin/r2-d2 internal/*.go
 
+## Build all binaries for dev env, to avoid "go: inconsistent vendoring in /build:"
+build.dev:
+	GO111MODULE=on $(GO) build -o bin/r2-d2 -mod=mod internal/*.go
+
 ## Compress all binaries
 pack:
 	@echo ">> packing all binaries"
