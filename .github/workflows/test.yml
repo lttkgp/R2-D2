@@ -27,8 +27,8 @@ jobs:
 
     - name: Fetch golangci-lint
       uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.31
+      with:
+        version: v1.31
 
     - name: Sync dependencies
       run: make depend.tidy depend.verify depend.vendor
