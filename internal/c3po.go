@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/lttkgp/R2-D2/internal/config"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"go.uber.org/zap"
@@ -30,7 +32,7 @@ func dispatchItem(dynamoSession *dynamodb.DynamoDB, entry map[string]*dynamodb.A
 	}
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/v1/data/post", GetEnv("C3PO_URI", "")),
+		fmt.Sprintf("%s/v1/data/post", config.GetEnv("C3PO_URI", "")),
 		bytes.NewBuffer(requestBody))
 	if err != nil {
 		logger.Error("Failed to generate post request payload for C-3PO", zap.Object("postData", postData), zap.Error(err))
