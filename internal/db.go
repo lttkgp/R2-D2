@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/lttkgp/R2-D2/internal/config"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -23,22 +24,16 @@ var partitionKey = "facebook_id"
 /// GSI
 var parsedGsiIndexName = "parsed_index"
 var parsedGsiPartitionKey = "is_parsed"
+var listOfIndexes = []string{parsedGsiIndexName}
 
-func createDynamoSession() *dynamodb.DynamoDB {
-	// Sensible defaults useful for local development
-	awsAccessKey := GetEnv("AWS_ACCESS_KEY_ID", "DEFAULT_KEY")
-	awsSecretKey := GetEnv("AWS_SECRET_ACCESS_KEY", "DEFAULT_SECRET")
-	awsDefaultRegion := GetEnv("AWS_REGION", "ap-south-1")
-	dynamoEndpoint := GetEnv("DYNAMODB_ENDPOINT", "")
+func createDynamoSession(awsSession *session.Session) *dynamodb.DynamoDB {
+	// Default Dynamo DB config
+	dynamoEndpoint := config.GetEnv("DYNAMODB_ENDPOINT", "")
 
 	if dynamoEndpoint != "" {
-		return dynamodb.New(session.Must(session.NewSession(&aws.Config{
-			Credentials: credentials.NewStaticCredentials(awsAccessKey, awsSecretKey, ""),
-			Endpoint:    aws.String(dynamoEndpoint),
-			Region:      aws.String(awsDefaultRegion),
-		})))
+		return dynamodb.New(awsSession, aws.NewConfig().WithEndpoint(dynamoEndpoint))
 	}
-	return dynamodb.New(session.Must(session.NewSession()))
+	return dynamodb.New(awsSession)
 }
 
 func createTable(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
@@ -105,8 +100,8 @@ func createTable(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) error {
 }
 
 // InitializeDynamoSession creates a DynamoDB session
-func InitializeDynamoSession(logger *zap.Logger) (*dynamodb.DynamoDB, error) {
-	dynamoSession := createDynamoSession()
+func InitializeDynamoSession(awsSession *session.Session, logger *zap.Logger) (*dynamodb.DynamoDB, error) {
+	dynamoSession := createDynamoSession(awsSession)
 	_, err := dynamoSession.DescribeTable(&dynamodb.DescribeTableInput{TableName: aws.String(tableName)})
 	if err != nil {
 		var resourceNotFoundException *dynamodb.ResourceNotFoundException
@@ -120,6 +115,7 @@ func InitializeDynamoSession(logger *zap.Logger) (*dynamodb.DynamoDB, error) {
 		}
 		return nil, err
 	}
+
 	return dynamoSession, nil
 }
 

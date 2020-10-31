@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/lttkgp/R2-D2/internal/config"
+
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/cenkalti/backoff/v4"
 	fb "github.com/huandu/facebook/v2"
@@ -16,7 +18,7 @@ import (
 
 const fbGroupID = "1488511748129645"
 
-var whoamiHeaderVal = GetEnv("WHOAMI", "")
+var whoamiHeaderVal = config.GetEnv("WHOAMI", "")
 var fbFeedParams = fb.Params{
 	"fields": `
 id,created_time,from,link,message,message_tags,name,object_id,permalink_url,properties,
@@ -30,9 +32,9 @@ func retryNotifyFunc(err error, duration time.Duration) {
 }
 
 func getFbAccessToken(fbApp *fb.App, logger *zap.Logger) string {
-	longAccessToken := GetEnv("FB_LONG_ACCESS_TOKEN", "")
+	longAccessToken := config.GetEnv("FB_LONG_ACCESS_TOKEN", "")
 	if longAccessToken == "" {
-		shortAccessToken := GetEnv("FB_SHORT_ACCESS_TOKEN", "")
+		shortAccessToken := config.GetEnv("FB_SHORT_ACCESS_TOKEN", "")
 		if shortAccessToken == "" {
 			return shortAccessToken
 		}
@@ -54,7 +56,7 @@ func getFbAccessToken(fbApp *fb.App, logger *zap.Logger) string {
 }
 
 func getFacebookSession(logger *zap.Logger) (*fb.Session, error) {
-	var fbApp = fb.New(GetEnv("FB_APP_ID", ""), GetEnv("FB_APP_SECRET", ""))
+	var fbApp = fb.New(config.GetEnv("FB_APP_ID", ""), config.GetEnv("FB_APP_SECRET", ""))
 	fbApp.RedirectUri = "https://beta.lttkgp.com"
 	sessionToken := getFbAccessToken(fbApp, logger)
 	if sessionToken == "" {
@@ -78,7 +80,7 @@ func FetchLatestPosts(dynamoSession *dynamodb.DynamoDB, logger *zap.Logger) erro
 
 	// Keep count of parsed posts
 	parsedCount := 0
-	latestCheckThreshold := GetEnv("LATEST_CHECK_THRESHOLD", "300")
+	latestCheckThreshold := config.GetEnv("LATEST_CHECK_THRESHOLD", "300")
 	maxParsedCount, err := strconv.Atoi(latestCheckThreshold)
 	if err != nil {
 		maxParsedCount = 300
